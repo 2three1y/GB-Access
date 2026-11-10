@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GB Access: Game Boy games for screen reader players</title>
+<meta name="description" content="A free, open-source Game Boy player for Safari that talks through VoiceOver and braille.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>GB Access</h1>
+  <p>Play Game Boy games with your screen reader. This page tells VoiceOver and your braille display what is happening.</p>
+</header>
+<main>
+  <section aria-labelledby="load-heading">
+    <h2 id="load-heading">Load a game</h2>
+    <p>Pick a Game Boy game file you own (it ends in .gb or .gbc). The file stays on your device. It is never uploaded.</p>
+    <label for="rom">Game file</label>
+    <input type="file" id="rom">
+  </section>
+
+  <section aria-labelledby="status-heading">
+    <h2 id="status-heading">What is happening</h2>
+    <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true">No game loaded yet.</div>
+  </section>
+
+  <section aria-labelledby="pad-heading">
+    <h2 id="pad-heading">Game Boy buttons</h2>
+    <p>Double tap a button to press it once. To hold a button, double tap and hold.</p>
+    <div class="pad">
+      <div class="dpad">
+        <button type="button" class="gb d-up" data-key="up">Up</button>
+        <button type="button" class="gb d-left" data-key="left">Left</button>
+        <button type="button" class="gb d-right" data-key="right">Right</button>
+        <button type="button" class="gb d-down" data-key="down">Down</button>
+      </div>
+      <div class="ab">
+        <button type="button" class="gb" data-key="b">B</button>
+        <button type="button" class="gb" data-key="a">A</button>
+      </div>
+      <div class="ss">
+        <button type="button" class="gb" data-key="select">Select</button>
+        <button type="button" class="gb" data-key="start">Start</button>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ctl-heading">
+    <h2 id="ctl-heading">Controls</h2>
+    <div class="row">
+      <button type="button" id="pause" disabled>Pause</button>
+      <button type="button" id="mute" aria-pressed="false">Mute sound</button>
+      <button type="button" id="picture" aria-pressed="false">Hide game picture</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="mem-heading">
+    <h2 id="mem-heading">Read memory (test)</h2>
+    <p>This reads one spot in the game's memory and says its number. Later, this is how GB Access will know what is going on in a game.</p>
+    <label for="addr">Memory address, in hex (like C000)</label>
+    <input type="text" id="addr" value="C000" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button type="button" id="readmem">Read memory</button>
+  </section>
+
+  <section aria-labelledby="screen-heading" id="screen-wrap">
+    <h2 id="screen-heading">Game picture</h2>
+    <canvas id="screen" width="160" height="144" role="img" aria-label="Game screen. Picture only, no text."></canvas>
+  </section>
+
+  <section aria-labelledby="log-heading">
+    <h2 id="log-heading">Past messages</h2>
+    <p>The newest is first. Good for reading again on braille.</p>
+    <ol id="log" reversed></ol>
+  </section>
+
+  <section aria-labelledby="keys-heading">
+    <h2 id="keys-heading">Keyboard keys</h2>
+    <ul>
+      <li>Arrow keys: the D-pad</li>
+      <li>X: A button</li>
+      <li>Z: B button</li>
+      <li>Enter: Start</li>
+      <li>Shift or Backspace: Select</li>
+      <li>P: pause or resume</li>
+    </ul>
+  </section>
+</main>
+<footer>
+  <p>GB Access is free and open source under the AGPL-3.0 license. It uses the binjgb emulator by Ben Smith (MIT license). No games are included.</p>
+  <p><a href="https://github.com/2three1y/GB-Access">GB Access source code on GitHub</a></p>
+</footer>
+<script src="vendor/binjgb/binjgb.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
