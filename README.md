@@ -12,12 +12,17 @@ Try it here: https://2three1y.github.io/GB-Access/
 - Pick a Game Boy game file (.gb or .gbc) from your device,
   or tap the demo game button to play Tobu Tobu Girl.
 - The page says the game's name, read from the game file itself.
-- Big, labeled buttons for Up, Down, Left, Right, A, B, Start and Select.
-  They are real buttons, so VoiceOver finds them.
+- Big, labeled buttons for Up, Left, Right, Down, A, B, Start and Select.
+  They sit under their own "Controls" heading, so the VoiceOver rotor jumps right to them.
+  When a game starts, focus moves to the Up button and it says "Controls ready".
   Double tap to press once. Double tap and hold to hold a button.
+- A quiet click on every button press, even when game sound is off.
+  Turn it off with the "Button sounds" button.
+- A "Say button names" button. When it is on, each press says the button name. It starts off.
 - Keyboard keys work too: arrow keys, X for A, Z for B, Enter for Start, Shift for Select, P to pause.
-- A Pause and Resume button, and a Mute button.
-- A "Read memory" test. Type an address like C000 and it says the number stored there.
+- A "More" section under the controls: Pause and Resume, game sound on or off, and the settings above.
+- A "Read memory" test. Type an address like 0134 and it says the number stored there.
+  It also shows the answer as text right under the button.
   This is how later steps will know what is going on in a game.
 - A list of past messages, so you can read them again on braille.
 - A button to hide the game picture. The picture can flash, so it starts hidden
