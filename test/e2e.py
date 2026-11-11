@@ -22,6 +22,14 @@ with sync_playwright() as p:
     sizes = pg.eval_on_selector_all("button", "bs => bs.map(b => [b.textContent.trim(), b.getBoundingClientRect().width, b.getBoundingClientRect().height])")
     ok("buttons_44px_and_labeled", all(w >= 44 and h >= 44 and t for t, w, h in sizes), sizes)
     ok("no_hscroll_390", pg.evaluate("document.documentElement.scrollWidth <= window.innerWidth"))
+    # demo game button: a real button with its name, loads the bundled game, says its title
+    demo = pg.get_by_role("button", name="Play demo game: Tobu Tobu Girl")
+    ok("demo_button_found", demo.count() == 1)
+    demo.click()
+    pg.wait_for_function("document.getElementById('status').textContent.includes('Game running')", timeout=15000)
+    ok("demo_loads_and_announces", st() == "Loaded TOBU. Game running.", st())
+    pg.wait_for_timeout(800)
+    ok("demo_runs", pg.evaluate("gbAccess.running") and pg.evaluate("gbAccess.title") == "TOBU", pg.evaluate("String(gbAccess.title)"))
     # bad file
     pg.set_input_files("#rom", files=[{"name": "notes.txt", "mimeType": "text/plain", "buffer": b"hello" * 100}])
     pg.wait_for_timeout(400); ok("bad_file_message", "not a Game Boy game" in st(), st())

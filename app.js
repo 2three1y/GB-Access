@@ -208,6 +208,26 @@ $("rom").addEventListener("change", async (ev) => {
   await loadRom(bytes, file.name);
 });
 
+// The demo game ships with GB Access (Tobu Tobu Girl, MIT + CC BY 4.0, see demo/CREDITS.md).
+const demoBtn = $("demo");
+let demoBusy = false;
+demoBtn.addEventListener("click", async () => {
+  // No "disabled" here: that would kick VoiceOver focus off the button.
+  if (demoBusy) return;
+  demoBusy = true;
+  say("Loading the demo game.");
+  try {
+    const res = await fetch("demo/tobutobugirl.gb");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    await loadRom(bytes, "tobutobugirl.gb");
+  } catch (e) {
+    say("The demo game did not load. Check your internet and try again.");
+  } finally {
+    demoBusy = false;
+  }
+});
+
 // ---------- Pause and mute ----------
 function setPaused(p) {
   if (!emu) { say("No game loaded yet."); return; }
