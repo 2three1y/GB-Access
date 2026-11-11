@@ -7,6 +7,8 @@ VoiceOver speaks it, and your braille display shows it.
 
 Try it here: https://2three1y.github.io/GB-Access/
 
+Making your own game? Read the [game dev screen reader guide](docs/GAME-DEV-GUIDE.md).
+
 ## What works now (step 1)
 
 - Pick a Game Boy game file (.gb or .gbc) from your device,
