@@ -26,15 +26,29 @@ const logEl = $("log");
 
 // ---------- Speaking ----------
 let sayTimer = 0;
-function say(msg) {
-  // Clear first, then set, so the same words are spoken again if repeated.
+let sayCount = 0;
+function say(msg, opts) {
+  // Clear first, then set after a short wait, so VoiceOver on iPhone speaks
+  // it even when the words are the same as last time. A no-break space is
+  // added on every other message, so the text always really changes.
   clearTimeout(sayTimer);
   statusEl.textContent = "";
-  sayTimer = setTimeout(() => { statusEl.textContent = msg; }, 60);
+  sayCount++;
+  const text = msg + (sayCount % 2 ? "" : "\u00a0");
+  sayTimer = setTimeout(() => { statusEl.textContent = text; }, 150);
+  if (opts && opts.log === false) return;
   const li = document.createElement("li");
   li.textContent = msg;
   logEl.prepend(li);
   while (logEl.children.length > 20) logEl.lastElementChild.remove();
+}
+
+// ---------- Settings (saved on this device only) ----------
+function loadSetting(name, dflt) {
+  try { const v = localStorage.getItem("gbaccess-" + name); return v === null ? dflt : v === "1"; } catch (e) { return dflt; }
+}
+function saveSetting(name, on) {
+  try { localStorage.setItem("gbaccess-" + name, on ? "1" : "0"); } catch (e) {}
 }
 
 // ---------- Cartridge header ----------
@@ -67,10 +81,38 @@ const audioCtx = AudioCtx ? new AudioCtx() : null;
 const gain = audioCtx ? audioCtx.createGain() : null;
 if (gain) gain.connect(audioCtx.destination);
 let muted = false;
+let paused = false;
+function setGameVolume() { if (gain) gain.gain.value = (muted || paused) ? 0 : 1; }
+
+// Button click sound: made right here in code, no sound files. It goes
+// straight to the speaker, so it still plays when game sound is off.
+let clickSounds = loadSetting("clicks", true);
+let clickCount = 0;
+function playClick(release) {
+  if (!clickSounds || !audioCtx) return;
+  if (audioCtx.state !== "running") audioCtx.resume().catch(() => {});
+  const t = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const env = audioCtx.createGain();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(release ? 900 : 1400, t);
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(release ? 0.08 : 0.15, t + 0.003);
+  env.gain.exponentialRampToValueAtTime(0.0001, t + (release ? 0.03 : 0.04));
+  osc.connect(env);
+  env.connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + 0.05);
+  clickCount++;
+}
+function buzz() {
+  // Does nothing on iPhone (no vibrate there), works on some Android phones.
+  try { if (clickSounds && navigator.vibrate) navigator.vibrate(10); } catch (e) {}
+}
 // On iPhone, let game sound play even with the ring switch on silent.
 try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
 function wakeAudio() {
-  if (audioCtx && audioCtx.state !== "running" && emu && !emu.paused) {
+  if (audioCtx && audioCtx.state !== "running" && ((emu && !emu.paused) || clickSounds)) {
     audioCtx.resume().catch(() => {});
   }
 }
@@ -189,10 +231,16 @@ async function loadRom(bytes, name) {
   const title = readTitle(bytes) || "an untitled game";
   emu.title = title;
   emu.start();
+  paused = false;
+  setGameVolume();
   pauseBtn.disabled = false;
   pauseBtn.textContent = "Pause";
-  if (audioCtx && !muted) audioCtx.resume().catch(() => {});
-  say("Loaded " + title + ". Game running.");
+  if (audioCtx) audioCtx.resume().catch(() => {});
+  // Jump straight to the game buttons, then speak, so the words come
+  // after VoiceOver reads the Up button.
+  const upBtn = document.querySelector("button.gb.d-up");
+  if (upBtn) upBtn.focus();
+  say("Loaded " + title + ". Game running. Controls ready.");
   return true;
 }
 
@@ -233,28 +281,52 @@ function setPaused(p) {
   if (!emu) { say("No game loaded yet."); return; }
   emu.paused = p;
   emu.lastSec = 0;
+  paused = p;
+  setGameVolume();
   pauseBtn.textContent = p ? "Resume" : "Pause";
-  if (audioCtx) { if (p) audioCtx.suspend().catch(() => {}); else if (!muted) audioCtx.resume().catch(() => {}); }
   say(p ? "Paused." : "Game running.");
 }
 pauseBtn.addEventListener("click", () => setPaused(emu ? !emu.paused : false));
 
-$("mute").addEventListener("click", (ev) => {
+const muteBtn = $("mute");
+muteBtn.addEventListener("click", () => {
   muted = !muted;
-  ev.currentTarget.setAttribute("aria-pressed", String(muted));
-  if (gain) gain.gain.value = muted ? 0 : 1;
-  say(muted ? "Sound off." : "Sound on.");
+  muteBtn.textContent = muted ? "Game sound: off" : "Game sound: on";
+  setGameVolume();
+  say(muted ? "Game sound off." : "Game sound on.");
+});
+
+const clicksBtn = $("clicks");
+function showClicks() { clicksBtn.textContent = clickSounds ? "Button sounds: on" : "Button sounds: off"; }
+showClicks();
+clicksBtn.addEventListener("click", () => {
+  clickSounds = !clickSounds;
+  saveSetting("clicks", clickSounds);
+  showClicks();
+  playClick(false);
+  say(clickSounds ? "Button sounds on." : "Button sounds off.");
+});
+
+let sayNames = loadSetting("names", false);
+const namesBtn = $("names");
+function showNames() { namesBtn.textContent = sayNames ? "Say button names: on" : "Say button names: off"; }
+showNames();
+namesBtn.addEventListener("click", () => {
+  sayNames = !sayNames;
+  saveSetting("names", sayNames);
+  showNames();
+  say(sayNames ? "Button names on." : "Button names off.");
 });
 
 const pictureBtn = $("picture");
 function setPictureHidden(h) {
   $("screen-wrap").hidden = h;
-  pictureBtn.setAttribute("aria-pressed", String(h));
+  pictureBtn.textContent = h ? "Game picture: hidden" : "Game picture: shown";
 }
 // The game picture can flash. If the device asks for less motion, hide it.
 if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) setPictureHidden(true);
 pictureBtn.addEventListener("click", () => {
-  const h = pictureBtn.getAttribute("aria-pressed") !== "true";
+  const h = !$("screen-wrap").hidden;
   setPictureHidden(h);
   say(h ? "Game picture hidden." : "Game picture shown.");
 });
@@ -266,12 +338,19 @@ function parseAddr(text) {
   return parseInt(t, 16);
 }
 function hex(n, w) { return n.toString(16).toUpperCase().padStart(w, "0"); }
+const memResult = $("memresult");
+function memSay(msg) {
+  memResult.textContent = "Last read: " + msg;
+  say(msg);
+}
 function readAndSay() {
+  if (!emu) { memSay("Load a game first."); return null; }
   const addr = parseAddr($("addr").value);
-  if (addr === null) { say("Type an address in hex, from 0000 to FFFF. For example C000."); return null; }
-  if (!emu) { say("Load a game first, then read memory."); return null; }
+  if (addr === null) { memSay("Type 4 hex digits, from 0000 to FFFF. For example 0134."); return null; }
   const v = emu.readMem(addr);
-  say("Address " + hex(addr, 4) + " holds " + v + ", hex " + hex(v, 2) + ".");
+  let msg = "Address " + hex(addr, 4) + " holds " + v + ", hex " + hex(v, 2);
+  if (v >= 0x41 && v <= 0x5a) msg += ", letter " + String.fromCharCode(v);
+  memSay(msg + ".");
   return v;
 }
 $("readmem").addEventListener("click", readAndSay);
@@ -286,7 +365,15 @@ function press(key, down) {
   emu.setKey(key, down);
   document.querySelectorAll('button.gb[data-key="' + key + '"]').forEach((b) => b.classList.toggle("is-down", down));
 }
+const NAMES = { up: "Up", down: "Down", left: "Left", right: "Right", a: "A", b: "B", start: "Start", select: "Select" };
+function feedback(key) {
+  playClick(false);
+  buzz();
+  if (sayNames && emu) say(NAMES[key], { log: false });
+}
 function tap(key) {
+  feedback(key);
+  setTimeout(() => playClick(true), TAP_MS);
   if (!emu) { say("Load a game first."); return; }
   press(key, true);
   setTimeout(() => { if (!held.has(key)) press(key, false); }, TAP_MS);
@@ -298,12 +385,14 @@ document.querySelectorAll("button.gb").forEach((btn) => {
     if (ev.pointerType === "mouse" && ev.button !== 0) return;
     pointerHeld = true;
     held.add(key);
+    feedback(key);
     press(key, true);
     try { btn.setPointerCapture(ev.pointerId); } catch (e) {}
   });
   const release = () => {
     if (!pointerHeld) return;
     held.delete(key);
+    playClick(true);
     // Keep it down at least one tap, so quick taps still count.
     setTimeout(() => { if (!held.has(key)) press(key, false); }, TAP_MS);
   };
@@ -332,6 +421,7 @@ window.addEventListener("keydown", (ev) => {
   const k = KEYMAP[ev.key];
   if (!k) return;
   ev.preventDefault();
+  if (!ev.repeat) playClick(false);
   held.add(k);
   press(k, true);
 });
@@ -339,6 +429,7 @@ window.addEventListener("keyup", (ev) => {
   const k = KEYMAP[ev.key];
   if (!k || !held.has(k)) return;
   held.delete(k);
+  playClick(true);
   press(k, false);
 });
 
@@ -348,6 +439,8 @@ window.gbAccess = {
   readTitle,
   loadRom,
   readMem: (addr) => (emu ? emu.readMem(addr) : null),
+  playClick,
+  get clicks() { return clickCount; },
   get running() { return !!emu && !emu.paused; },
   get title() { return emu ? emu.title : null; },
 };

@@ -28,42 +28,19 @@
     <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true">No game loaded yet.</div>
   </section>
 
-  <section aria-labelledby="pad-heading">
-    <h2 id="pad-heading">Game Boy buttons</h2>
+  <section aria-labelledby="controls-heading" id="controls">
+    <h2 id="controls-heading">Controls</h2>
     <p>Double tap a button to press it once. To hold a button, double tap and hold.</p>
     <div class="pad">
-      <div class="dpad">
-        <button type="button" class="gb d-up" data-key="up">Up</button>
-        <button type="button" class="gb d-left" data-key="left">Left</button>
-        <button type="button" class="gb d-right" data-key="right">Right</button>
-        <button type="button" class="gb d-down" data-key="down">Down</button>
-      </div>
-      <div class="ab">
-        <button type="button" class="gb" data-key="b">B</button>
-        <button type="button" class="gb" data-key="a">A</button>
-      </div>
-      <div class="ss">
-        <button type="button" class="gb" data-key="select">Select</button>
-        <button type="button" class="gb" data-key="start">Start</button>
-      </div>
+      <button type="button" class="gb d-up" data-key="up">Up</button>
+      <button type="button" class="gb d-left" data-key="left">Left</button>
+      <button type="button" class="gb d-right" data-key="right">Right</button>
+      <button type="button" class="gb d-down" data-key="down">Down</button>
+      <button type="button" class="gb k-a" data-key="a">A</button>
+      <button type="button" class="gb k-b" data-key="b">B</button>
+      <button type="button" class="gb k-start" data-key="start">Start</button>
+      <button type="button" class="gb k-select" data-key="select">Select</button>
     </div>
-  </section>
-
-  <section aria-labelledby="ctl-heading">
-    <h2 id="ctl-heading">Controls</h2>
-    <div class="row">
-      <button type="button" id="pause" disabled>Pause</button>
-      <button type="button" id="mute" aria-pressed="false">Mute sound</button>
-      <button type="button" id="picture" aria-pressed="false">Hide game picture</button>
-    </div>
-  </section>
-
-  <section aria-labelledby="mem-heading">
-    <h2 id="mem-heading">Read memory (test)</h2>
-    <p>This reads one spot in the game's memory and says its number. Later, this is how GB Access will know what is going on in a game.</p>
-    <label for="addr">Memory address, in hex (like C000)</label>
-    <input type="text" id="addr" value="C000" autocomplete="off" autocapitalize="characters" spellcheck="false">
-    <button type="button" id="readmem">Read memory</button>
   </section>
 
   <section aria-labelledby="screen-heading" id="screen-wrap">
@@ -71,14 +48,29 @@
     <canvas id="screen" width="160" height="144" role="img" aria-label="Game screen. Picture only, no text."></canvas>
   </section>
 
-  <section aria-labelledby="log-heading">
-    <h2 id="log-heading">Past messages</h2>
+  <section aria-labelledby="more-heading">
+    <h2 id="more-heading">More</h2>
+    <p>Button sounds play a quiet click on every press, even when game sound is off. Say button names speaks each button you press.</p>
+    <div class="row">
+      <button type="button" id="pause" disabled>Pause</button>
+      <button type="button" id="mute">Game sound: on</button>
+      <button type="button" id="clicks">Button sounds: on</button>
+      <button type="button" id="names">Say button names: off</button>
+      <button type="button" id="picture">Game picture: shown</button>
+    </div>
+
+    <h3 id="mem-heading">Read memory (test)</h3>
+    <p>This reads one spot in the game's memory and says its number. Later, this is how GB Access will know what is going on in a game.</p>
+    <label for="addr">Memory address, 4 hex digits (like 0134)</label>
+    <input type="text" id="addr" value="0134" maxlength="4" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <button type="button" id="readmem">Read memory</button>
+    <p id="memresult">Last read: none yet.</p>
+
+    <h3 id="log-heading">Past messages</h3>
     <p>The newest is first. Good for reading again on braille.</p>
     <ol id="log" reversed></ol>
-  </section>
 
-  <section aria-labelledby="keys-heading">
-    <h2 id="keys-heading">Keyboard keys</h2>
+    <h3 id="keys-heading">Keyboard keys</h3>
     <ul>
       <li>Arrow keys: the D-pad</li>
       <li>X: A button</li>

@@ -21,6 +21,7 @@ body {
 }
 h1 { font-size: 2rem; margin: 0.5rem 0; }
 h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; }
+h3 { font-size: 1.15rem; margin: 1.25rem 0 0.5rem; }
 p { color: var(--muted); }
 a { color: var(--line); }
 label { display: block; font-weight: 600; margin: 0.5rem 0 0.25rem; }
@@ -50,7 +51,7 @@ button {
   user-select: none;
   -webkit-touch-callout: none;
 }
-button.is-down, button[aria-pressed="true"] { background: var(--btn-down); }
+button.is-down { background: var(--btn-down); }
 button:disabled { opacity: 0.6; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .status {
@@ -60,20 +61,33 @@ button:disabled { opacity: 0.6; }
   min-height: 3rem;
   font-size: 1.25rem;
 }
-.pad { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
-.dpad {
+/* Game buttons: one big grid, same order on screen as for VoiceOver:
+   Up, Left, Right, Down, then A, B, then Start, Select. */
+.pad {
   display: grid;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(3, 64px);
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+  max-width: 26rem;
 }
-.dpad button { width: 64px; height: 64px; margin: 0; padding: 0; }
-.dpad .d-up { grid-column: 2; grid-row: 1; }
-.dpad .d-left { grid-column: 1; grid-row: 2; }
-.dpad .d-right { grid-column: 3; grid-row: 2; }
-.dpad .d-down { grid-column: 2; grid-row: 3; }
-.ab button { width: 72px; height: 72px; border-radius: 50%; }
-.ss button { min-width: 88px; }
+.pad button.gb {
+  margin: 0;
+  padding: 0.25rem;
+  min-height: 88px;
+  font-size: 1.5rem;
+  width: 100%;
+}
+.pad .d-up { grid-column: 3 / span 2; grid-row: 1; }
+.pad .d-left { grid-column: 1 / span 2; grid-row: 2; }
+.pad .d-right { grid-column: 5 / span 2; grid-row: 2; }
+.pad .d-down { grid-column: 3 / span 2; grid-row: 3; }
+.pad .k-a { grid-column: 1 / span 3; grid-row: 4; }
+.pad .k-b { grid-column: 4 / span 3; grid-row: 4; }
+.pad .k-start { grid-column: 1 / span 3; grid-row: 5; min-height: 64px; font-size: 1.25rem; }
+.pad .k-select { grid-column: 4 / span 3; grid-row: 5; min-height: 64px; font-size: 1.25rem; }
 .row { display: flex; flex-wrap: wrap; }
+.row button { min-height: 52px; }
+#memresult { font-size: 1.25rem; color: var(--fg); }
+#addr { width: 7em; font-family: ui-monospace, monospace; }
 canvas {
   width: 320px;
   max-width: 100%;
